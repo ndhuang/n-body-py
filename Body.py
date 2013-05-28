@@ -51,10 +51,10 @@ class Body(object):
         a_x, a_y, a_z, float, optional
             x, y, and z velocities in meters per second^2.  defaults to zero
         '''
-        self._G = 6.67e-11
-        self.r = Vector(x, y, z)
-        self.v = Vector(v_x, v_y, v_z)
-        self.a = Vector(0, 0, 0)
+        self._G = np.float64(6.67e-11)
+        self.r = Vector(np.float64(x), np.float64(y), np.float64(z))
+        self.v = Vector(np.float64(v_x), np.float64(v_y), np.float64(v_z))
+        self.a = Vector(np.float64(a_x), np.float64(a_y), np.float64(a_z))
         self.m = np.float64(m)
 
     def displacement(self, other):
@@ -66,12 +66,23 @@ class Body(object):
         The vector force on `self` from `other`
         other.force(self) == -self.force(other)
         '''
+        if self == other:
+            raise ValueError('A Body exerts no force on itself!')
         R = self.displacement(other)
-        f = self.m * other.m * self._G / R.mag()**2
+        f = self.m * other.m * self._G / (R.mag()**2)
         return f * R.norm()
         
     def step(self, t):
         '''
         Step the body forward `t` seconds
         '''
+        self.v += self.a * t
         self.r += self.a * t*t / 2 + self.v * t
+
+    def plot(self, axes, *args, **kwargs):
+        '''
+        plot yourself on `axes`, where `axes` is a mpl_toolkits.mplot3d.Axes3D
+        instance.  Will probably work with an 2D axes object...
+        '''
+        axes.scatter(self.r[0], self.r[1], self.r[2], *args, **kwargs)
+
